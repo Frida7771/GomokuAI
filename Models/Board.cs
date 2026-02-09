@@ -4,18 +4,22 @@ using System.Collections.Generic;
 namespace GomokuAI.Models
 {
     /// <summary>
-    /// Board class - 15x15 Gomoku board
+    /// Board class - 15x15 Gomoku board with undo/redo support
     /// </summary>
     public class Board
     {
         public const int Size = 15;
         private int[,] _grid;
-        private List<Move> _moveHistory;
+        
+        // Use Stack for LIFO operations - cleaner for undo/redo
+        private Stack<Move> _undoStack;
+        private Stack<Move> _redoStack;
 
         public Board()
         {
             _grid = new int[Size, Size];
-            _moveHistory = new List<Move>();
+            _undoStack = new Stack<Move>();
+            _redoStack = new Stack<Move>();
             Reset();
         }
 
@@ -31,7 +35,8 @@ namespace GomokuAI.Models
                     _grid[i, j] = (int)PlayerType.None;
                 }
             }
-            _moveHistory.Clear();
+            _undoStack.Clear();
+            _redoStack.Clear();
         }
 
         /// <summary>
@@ -56,24 +61,54 @@ namespace GomokuAI.Models
                 return false;
 
             _grid[move.Row, move.Col] = (int)move.Player;
-            move.MoveNumber = _moveHistory.Count + 1;
-            _moveHistory.Add(move);
+            move.MoveNumber = _undoStack.Count + 1;
+            _undoStack.Push(move);
+            
+            // Clear redo stack when new move is made
+            _redoStack.Clear();
+            
             return true;
         }
 
         /// <summary>
-        /// Undo - Reverts the last move
+        /// Undo - Reverts the last move (returns the undone move)
         /// </summary>
-        public Move? UndoLastMove()
+        public Move? Undo()
         {
-            if (_moveHistory.Count == 0)
+            if (_undoStack.Count == 0)
                 return null;
 
-            var lastMove = _moveHistory[_moveHistory.Count - 1];
-            _grid[lastMove.Row, lastMove.Col] = (int)PlayerType.None;
-            _moveHistory.RemoveAt(_moveHistory.Count - 1);
-            return lastMove;
+            var move = _undoStack.Pop();
+            _grid[move.Row, move.Col] = (int)PlayerType.None;
+            _redoStack.Push(move);
+            
+            return move;
         }
+
+        /// <summary>
+        /// Redo - Replays the last undone move (returns the redone move)
+        /// </summary>
+        public Move? Redo()
+        {
+            if (_redoStack.Count == 0)
+                return null;
+
+            var move = _redoStack.Pop();
+            _grid[move.Row, move.Col] = (int)move.Player;
+            _undoStack.Push(move);
+            
+            return move;
+        }
+
+        /// <summary>
+        /// Check if undo is available
+        /// </summary>
+        public bool CanUndo => _undoStack.Count > 0;
+
+        /// <summary>
+        /// Check if redo is available
+        /// </summary>
+        public bool CanRedo => _redoStack.Count > 0;
 
         /// <summary>
         /// Check if position is valid
@@ -92,11 +127,13 @@ namespace GomokuAI.Models
         }
 
         /// <summary>
-        /// Get move history
+        /// Get move history as list (for display)
         /// </summary>
         public List<Move> GetMoveHistory()
         {
-            return new List<Move>(_moveHistory);
+            var moves = new List<Move>(_undoStack);
+            moves.Reverse(); // Stack is LIFO, reverse to get chronological order
+            return moves;
         }
 
         /// <summary>
@@ -104,9 +141,9 @@ namespace GomokuAI.Models
         /// </summary>
         public Move? GetLastMove()
         {
-            if (_moveHistory.Count == 0)
+            if (_undoStack.Count == 0)
                 return null;
-            return _moveHistory[_moveHistory.Count - 1];
+            return _undoStack.Peek();
         }
 
         /// <summary>
@@ -167,7 +204,7 @@ namespace GomokuAI.Models
         {
             var positions = new HashSet<(int, int)>();
 
-            foreach (var move in _moveHistory)
+            foreach (var move in _undoStack)
             {
                 for (int dr = -radius; dr <= radius; dr++)
                 {
@@ -195,6 +232,16 @@ namespace GomokuAI.Models
         /// <summary>
         /// Get total move count
         /// </summary>
-        public int MoveCount => _moveHistory.Count;
+        public int MoveCount => _undoStack.Count;
+
+        /// <summary>
+        /// Get undo stack count
+        /// </summary>
+        public int UndoCount => _undoStack.Count;
+
+        /// <summary>
+        /// Get redo stack count
+        /// </summary>
+        public int RedoCount => _redoStack.Count;
     }
 }

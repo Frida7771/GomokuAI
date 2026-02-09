@@ -143,31 +143,8 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Move history -->
-                <Border Grid.Row="3"
-                        Background="#0f3460"
-                        CornerRadius="8"
-                        Padding="12"
-                        Margin="0,0,0,15">
-                    <Grid RowDefinitions="Auto,*">
-                        <TextBlock Text="Move History"
-                                   FontSize="12"
-                                   Foreground="#888"
-                                   Margin="0,0,0,8"/>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl x:Name="MoveHistoryList">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}"
-                                                   Foreground="#eaeaea"
-                                                   FontSize="12"
-                                                   Margin="0,2"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
+                <!-- Spacer -->
+                <Border Grid.Row="3"/>
 
                 <!-- Control buttons -->
                 <StackPanel Grid.Row="4">
@@ -182,6 +159,13 @@
                             Classes="secondary"
                             HorizontalAlignment="Stretch"
                             Click="UndoButton_Click"
+                            IsEnabled="False"
+                            Margin="0,0,0,8"/>
+                    <Button x:Name="RedoButton"
+                            Content="Redo"
+                            Classes="secondary"
+                            HorizontalAlignment="Stretch"
+                            Click="RedoButton_Click"
                             IsEnabled="False"/>
                 </StackPanel>
             </Grid>

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -14,7 +13,6 @@ namespace GomokuAI.Views
     public partial class MainWindow : Window
     {
         private readonly GameService _gameService;
-        private readonly ObservableCollection<string> _moveHistory;
 
         private const int BoardSize = 15;
         private const double CellSize = 40;
@@ -36,8 +34,6 @@ namespace GomokuAI.Views
             InitializeComponent();
 
             _gameService = new GameService();
-            _moveHistory = new ObservableCollection<string>();
-            MoveHistoryList.ItemsSource = _moveHistory;
 
             // Subscribe to events
             _gameService.OnBoardUpdated += () => Dispatcher.UIThread.Post(DrawBoard);
@@ -132,12 +128,8 @@ namespace GomokuAI.Views
                 }
             }
 
-            // Update move history
-            UpdateMoveHistory();
-
-            // Update undo button state
-            UndoButton.IsEnabled = _gameService.GetBoard().MoveCount >= 2 &&
-                                   _gameService.State == GameState.Playing;
+            // Update undo/redo button states
+            UpdateUndoRedoButtons();
         }
 
         /// <summary>
@@ -286,19 +278,38 @@ namespace GomokuAI.Views
         /// </summary>
         private void StartButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            _moveHistory.Clear();
             _gameService.StartNewGame();
             StartButton.Content = "Restart";
             UpdateTurnIndicators();
         }
 
         /// <summary>
-        /// Undo button
+        /// Undo button - Uses Stack-based state management
         /// </summary>
         private void UndoButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             _gameService.Undo();
             UpdateTurnIndicators();
+            UpdateUndoRedoButtons();
+        }
+
+        /// <summary>
+        /// Redo button - Replays undone moves
+        /// </summary>
+        private void RedoButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            _gameService.Redo();
+            UpdateTurnIndicators();
+            UpdateUndoRedoButtons();
+        }
+
+        /// <summary>
+        /// Update undo/redo button states
+        /// </summary>
+        private void UpdateUndoRedoButtons()
+        {
+            UndoButton.IsEnabled = _gameService.CanUndo;
+            RedoButton.IsEnabled = _gameService.CanRedo;
         }
 
         /// <summary>
@@ -308,6 +319,7 @@ namespace GomokuAI.Views
         {
             StatusText.Text = message;
             UpdateTurnIndicators();
+            UpdateUndoRedoButtons();
         }
 
         /// <summary>
@@ -342,27 +354,17 @@ namespace GomokuAI.Views
         }
 
         /// <summary>
-        /// Update move history
-        /// </summary>
-        private void UpdateMoveHistory()
-        {
-            _moveHistory.Clear();
-            foreach (var move in _gameService.GetMoveHistory())
-            {
-                _moveHistory.Add(move.ToString());
-            }
-        }
-
-        /// <summary>
         /// Game state changed callback
         /// </summary>
         private void OnGameStateChanged(GameState state)
         {
-            UndoButton.IsEnabled = state == GameState.Playing && _gameService.GetBoard().MoveCount >= 2;
+            UpdateUndoRedoButtons();
 
             if (state == GameState.BlackWin || state == GameState.WhiteWin || state == GameState.Draw)
             {
                 StartButton.Content = "Play Again";
+                UndoButton.IsEnabled = false;
+                RedoButton.IsEnabled = false;
             }
         }
     }

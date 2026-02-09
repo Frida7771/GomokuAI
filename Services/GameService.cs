@@ -17,7 +17,7 @@ namespace GomokuAI.Services
     }
 
     /// <summary>
-    /// Game service - Manages game flow
+    /// Game service - Manages game flow with undo/redo support
     /// </summary>
     public class GameService
     {
@@ -197,7 +197,8 @@ namespace GomokuAI.Services
         }
 
         /// <summary>
-        /// Undo (reverts both player and AI moves)
+        /// Undo last move pair (reverts both player and AI moves)
+        /// Uses Stack-based state management for clean LIFO operations
         /// </summary>
         public bool Undo()
         {
@@ -207,22 +208,111 @@ namespace GomokuAI.Services
                 return false;
             }
 
-            if (_board.MoveCount < 2)
+            if (!_board.CanUndo || _board.UndoCount < 2)
             {
                 OnGameMessage?.Invoke("Not enough moves to undo!");
                 return false;
             }
 
-            // Undo AI's move
-            _board.UndoLastMove();
+            // Undo AI's move first (last move)
+            var aiUndone = _board.Undo();
             // Undo player's move
-            _board.UndoLastMove();
+            var playerUndone = _board.Undo();
 
             CurrentPlayer = HumanPlayer.Type;
             OnBoardUpdated?.Invoke();
-            OnGameMessage?.Invoke("Undo complete. Your turn.");
+            
+            if (playerUndone != null && aiUndone != null)
+            {
+                OnGameMessage?.Invoke($"Undone: Your ({playerUndone.Row},{playerUndone.Col}) & AI ({aiUndone.Row},{aiUndone.Col}). Your turn.");
+            }
+            else
+            {
+                OnGameMessage?.Invoke("Undo complete. Your turn.");
+            }
+            
             return true;
         }
+
+        /// <summary>
+        /// Undo single move (for more granular control)
+        /// </summary>
+        public bool UndoSingle()
+        {
+            if (State != GameState.Playing)
+            {
+                OnGameMessage?.Invoke("Game is not in progress!");
+                return false;
+            }
+
+            if (!_board.CanUndo)
+            {
+                OnGameMessage?.Invoke("No moves to undo!");
+                return false;
+            }
+
+            var undone = _board.Undo();
+            
+            // Switch current player
+            CurrentPlayer = CurrentPlayer == PlayerType.Black ? PlayerType.White : PlayerType.Black;
+            
+            OnBoardUpdated?.Invoke();
+            
+            if (undone != null)
+            {
+                string player = undone.Player == PlayerType.Black ? "Black" : "White";
+                OnGameMessage?.Invoke($"Undone: {player} ({undone.Row},{undone.Col})");
+            }
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Redo last undone move pair (replays both moves)
+        /// </summary>
+        public bool Redo()
+        {
+            if (State != GameState.Playing)
+            {
+                OnGameMessage?.Invoke("Game is not in progress!");
+                return false;
+            }
+
+            if (!_board.CanRedo || _board.RedoCount < 2)
+            {
+                OnGameMessage?.Invoke("No moves to redo!");
+                return false;
+            }
+
+            // Redo player's move first
+            var playerRedone = _board.Redo();
+            // Redo AI's move
+            var aiRedone = _board.Redo();
+
+            CurrentPlayer = HumanPlayer.Type;
+            OnBoardUpdated?.Invoke();
+            
+            if (playerRedone != null && aiRedone != null)
+            {
+                OnGameMessage?.Invoke($"Redone: Your ({playerRedone.Row},{playerRedone.Col}) & AI ({aiRedone.Row},{aiRedone.Col}). Your turn.");
+            }
+            else
+            {
+                OnGameMessage?.Invoke("Redo complete. Your turn.");
+            }
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Check if undo is available
+        /// </summary>
+        public bool CanUndo => State == GameState.Playing && _board.UndoCount >= 2;
+
+        /// <summary>
+        /// Check if redo is available
+        /// </summary>
+        public bool CanRedo => State == GameState.Playing && _board.RedoCount >= 2;
 
         /// <summary>
         /// Get the board
