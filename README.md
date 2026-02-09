@@ -8,6 +8,8 @@ A cross-platform Gomoku (Five-in-a-Row) game with AI opponent, built with C# and
 ![.NET 8](https://img.shields.io/badge/.NET-8.0-orange)
 ![Cross-Platform](https://img.shields.io/badge/Platform-macOS%20|%20Linux%20|%20Windows-brightgreen)
 
+![Demo](./demo/demo.jpg)
+
 ## 🎮 Features
 
 - **15×15 Standard Board** - Classic Gomoku board
