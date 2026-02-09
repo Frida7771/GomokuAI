@@ -17,18 +17,32 @@ namespace GomokuAI.Services
     }
 
     /// <summary>
-    /// Game service - Manages game flow with undo/redo support
+    /// Game service - Manages game flow with undo/redo and difficulty support
     /// </summary>
     public class GameService
     {
         private Board _board;
         private WinChecker _winChecker;
         private AIService _aiService;
+        private Difficulty _difficulty;
 
         public Player HumanPlayer { get; private set; }
         public Player AIPlayer { get; private set; }
         public PlayerType CurrentPlayer { get; private set; }
         public GameState State { get; private set; }
+        
+        /// <summary>
+        /// Current AI difficulty level
+        /// </summary>
+        public Difficulty CurrentDifficulty 
+        { 
+            get => _difficulty;
+            set
+            {
+                _difficulty = value;
+                _aiService.SetDifficulty(value);
+            }
+        }
 
         public event Action? OnBoardUpdated;
         public event Action<string>? OnGameMessage;
@@ -38,10 +52,21 @@ namespace GomokuAI.Services
         {
             _board = new Board();
             _winChecker = new WinChecker();
-            _aiService = new AIService();
+            _difficulty = Difficulty.Medium;
+            _aiService = new AIService(DifficultyConfig.GetDepth(_difficulty));
             HumanPlayer = Player.CreateHumanPlayer();
             AIPlayer = Player.CreateAIPlayer();
             State = GameState.NotStarted;
+        }
+
+        /// <summary>
+        /// Set AI difficulty
+        /// </summary>
+        public void SetDifficulty(Difficulty difficulty)
+        {
+            _difficulty = difficulty;
+            _aiService.SetDifficulty(difficulty);
+            OnGameMessage?.Invoke($"Difficulty set to {DifficultyConfig.GetName(difficulty)}");
         }
 
         /// <summary>
@@ -54,7 +79,8 @@ namespace GomokuAI.Services
             State = GameState.Playing;
             OnGameStateChanged?.Invoke(State);
             OnBoardUpdated?.Invoke();
-            OnGameMessage?.Invoke("Game started! Black (You) moves first.");
+            string diffName = DifficultyConfig.GetName(_difficulty);
+            OnGameMessage?.Invoke($"Game started! Difficulty: {diffName}. Your turn.");
         }
 
         /// <summary>

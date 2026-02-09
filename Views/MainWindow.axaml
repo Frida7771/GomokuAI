@@ -143,8 +143,38 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Spacer -->
-                <Border Grid.Row="3"/>
+                <!-- Difficulty selector -->
+                <Border Grid.Row="3"
+                        Background="#0f3460"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,0,0,15"
+                        VerticalAlignment="Top">
+                    <StackPanel>
+                        <TextBlock Text="Difficulty"
+                                   FontSize="12"
+                                   Foreground="#888"
+                                   Margin="0,0,0,8"/>
+                        <StackPanel Spacing="6">
+                            <RadioButton x:Name="EasyRadio" 
+                                         Content="Easy (Depth 2)" 
+                                         GroupName="Difficulty"
+                                         Foreground="#eaeaea"
+                                         Click="DifficultyRadio_Click"/>
+                            <RadioButton x:Name="MediumRadio" 
+                                         Content="Medium (Depth 3)" 
+                                         GroupName="Difficulty"
+                                         IsChecked="True"
+                                         Foreground="#eaeaea"
+                                         Click="DifficultyRadio_Click"/>
+                            <RadioButton x:Name="HardRadio" 
+                                         Content="Hard (Depth 4)" 
+                                         GroupName="Difficulty"
+                                         Foreground="#eaeaea"
+                                         Click="DifficultyRadio_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
                 <!-- Control buttons -->
                 <StackPanel Grid.Row="4">

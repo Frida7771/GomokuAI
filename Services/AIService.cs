@@ -6,11 +6,12 @@ namespace GomokuAI.Services
 {
     /// <summary>
     /// AI Service - Uses Minimax algorithm with Alpha-Beta pruning
+    /// Supports configurable difficulty through search depth
     /// </summary>
     public class AIService
     {
         private readonly WinChecker _winChecker;
-        private const int MaxDepth = 3;
+        private int _searchDepth;
         private const int BoardSize = Board.Size;
 
         // Score constants
@@ -31,9 +32,27 @@ namespace GomokuAI.Services
             { 1, -1 }   // Diagonal ↙
         };
 
-        public AIService()
+        /// <summary>
+        /// Current search depth (difficulty level)
+        /// </summary>
+        public int SearchDepth 
+        { 
+            get => _searchDepth;
+            set => _searchDepth = Math.Clamp(value, 1, 6);
+        }
+
+        public AIService(int depth = 3)
         {
             _winChecker = new WinChecker();
+            _searchDepth = depth;
+        }
+
+        /// <summary>
+        /// Set difficulty level
+        /// </summary>
+        public void SetDifficulty(Difficulty difficulty)
+        {
+            _searchDepth = DifficultyConfig.GetDepth(difficulty);
         }
 
         /// <summary>
@@ -73,7 +92,7 @@ namespace GomokuAI.Services
                 }
 
                 // Minimax evaluation
-                int score = Minimax(grid, MaxDepth - 1, alpha, beta, false, (int)aiPlayer, opponent);
+                int score = Minimax(grid, _searchDepth - 1, alpha, beta, false, (int)aiPlayer, opponent);
 
                 grid[row, col] = 0;
 

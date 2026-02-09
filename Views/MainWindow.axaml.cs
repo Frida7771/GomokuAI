@@ -274,6 +274,25 @@ namespace GomokuAI.Views
         }
 
         /// <summary>
+        /// Difficulty radio button clicked
+        /// </summary>
+        private void DifficultyRadio_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            // Skip if called during initialization
+            if (_gameService == null)
+                return;
+
+            Difficulty difficulty = Difficulty.Medium;
+            
+            if (EasyRadio.IsChecked == true)
+                difficulty = Difficulty.Easy;
+            else if (HardRadio.IsChecked == true)
+                difficulty = Difficulty.Hard;
+            
+            _gameService.SetDifficulty(difficulty);
+        }
+
+        /// <summary>
         /// Start game button
         /// </summary>
         private void StartButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

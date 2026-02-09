@@ -8,20 +8,26 @@ A cross-platform Gomoku (Five-in-a-Row) game with AI opponent, built with C# and
 ![.NET 8](https://img.shields.io/badge/.NET-8.0-orange)
 ![Cross-Platform](https://img.shields.io/badge/Platform-macOS%20|%20Linux%20|%20Windows-brightgreen)
 
-![Demo](./demo/demo.jpg)
+![Demo](./demo/demo1.jpg)
 
 ## 🎮 Features
 
 - **15×15 Standard Board** - Classic Gomoku board
 - **Human vs AI Mode** - Player plays Black (first), AI plays White
-- **Intelligent AI** - Based on Minimax algorithm with Alpha-Beta pruning
+- **Intelligent AI** - Minimax algorithm with Alpha-Beta pruning
+- **Difficulty Selection** - Easy / Medium / Hard (configurable search depth)
+- **Undo/Redo** - Stack-based state management for reversible operations
 - **Real-time Win Detection** - Four-direction consecutive check
-- **Undo Function** - Support for move reversal
-- **Move History** - Complete record of each move
 - **Modern UI Design** - Dark theme, clean interface
 - **Cross-Platform** - macOS, Linux, Windows
 
+## 🎚️ Difficulty Levels
 
+| Level | Search Depth | Description |
+|-------|--------------|-------------|
+| Easy | Depth 2 | Quick response, less challenging |
+| Medium | Depth 3 | Balanced difficulty |
+| Hard | Depth 4 | Strong AI, slower response |
 
 ## 🧠 AI Algorithm
 
@@ -38,7 +44,6 @@ Optimizes search efficiency through Alpha-Beta pruning:
 - Prunes branches that won't affect the final decision
 
 ### Heuristic Evaluation
-Pattern evaluation scores:
 | Pattern | Score |
 |---------|-------|
 | Five in a row | 100,000 |
@@ -54,6 +59,18 @@ Pattern evaluation scores:
 - **Candidate Sorting** - Sort candidate positions by evaluation score
 - **Search Width Limit** - Limit branches per search level
 
+## 🔄 Undo/Redo System
+
+Stack-based state management for clean reversible operations:
+
+```csharp
+Stack<Move> _undoStack;  // Move history
+Stack<Move> _redoStack;  // Undone moves
+
+Undo() → Pop from undoStack, push to redoStack
+Redo() → Pop from redoStack, push to undoStack
+```
+
 ## 🚀 Requirements
 
 - macOS / Linux / Windows
@@ -62,16 +79,9 @@ Pattern evaluation scores:
 ## 📦 Build and Run
 
 ```bash
-# Navigate to project directory
 cd GomokuAI
-
-# Restore dependencies
 dotnet restore
-
-# Build project
 dotnet build
-
-# Run project
 dotnet run
 ```
 
@@ -82,35 +92,21 @@ dotnet run
 3. First to connect five pieces horizontally, vertically, or diagonally wins
 4. Draw if board is full with no winner
 
-## 🎨 Interface Preview
+## 📝 Core Classes
 
-The game features a dark theme design:
-- Left: Board area with mouse hover preview
-- Right: Control panel showing game status and history
+| Class | Description |
+|-------|-------------|
+| `Board` | Board state, Stack-based undo/redo |
+| `Move` | Single move data structure |
+| `Difficulty` | Enum for AI difficulty levels |
+| `GameService` | Game flow control |
+| `AIService` | Minimax + Alpha-Beta AI engine |
+| `WinChecker` | Five-in-a-row detection |
 
-## 📝 Development Notes
+## 🛠️ Tech Stack
 
-### Core Classes
-
-- **Board** - Board state management, placing pieces, undo, empty cell queries
-- **Move** - Single move data structure
-- **Player** - Player information
-- **GameService** - Game flow control
-- **AIService** - AI decision engine
-- **WinChecker** - Five-in-a-row detection
-
-### Tech Stack
-
-- **Avalonia 11.2** - Cross-platform UI framework
-- **Fluent Theme** - Modern theme
+- **C#** - Programming language
 - **.NET 8.0** - Runtime
-
-### Extension Ideas
-
-- Add difficulty levels (adjust search depth)
-- Add opening book
-- Implement forbidden move rules (professional rules)
-- Add human vs human mode
-- Save/load game records
-
+- **Avalonia 11.2** - Cross-platform UI framework
+- **Fluent Theme** - Modern dark theme
 
