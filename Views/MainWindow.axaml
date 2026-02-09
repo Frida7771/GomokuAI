@@ -1,0 +1,190 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="GomokuAI.Views.MainWindow"
+        Title="Gomoku AI"
+        Width="900"
+        Height="750"
+        MinWidth="750"
+        MinHeight="650"
+        WindowStartupLocation="CenterScreen"
+        Background="#1a1a2e">
+
+    <Window.Styles>
+        <!-- Primary button style -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#e94560"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="#ff6b6b"/>
+        </Style>
+        <Style Selector="Button.primary:pressed">
+            <Setter Property="Background" Value="#c73e5e"/>
+        </Style>
+        <Style Selector="Button.primary:disabled">
+            <Setter Property="Background" Value="#555"/>
+            <Setter Property="Foreground" Value="#888"/>
+        </Style>
+
+        <!-- Secondary button style -->
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="#0f3460"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderBrush" Value="#3a5a8a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Button.secondary:pointerover">
+            <Setter Property="Background" Value="#1a4a7a"/>
+        </Style>
+        <Style Selector="Button.secondary:pressed">
+            <Setter Property="Background" Value="#0a3a5a"/>
+        </Style>
+        <Style Selector="Button.secondary:disabled">
+            <Setter Property="Background" Value="#333"/>
+            <Setter Property="Foreground" Value="#666"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid ColumnDefinitions="*,220">
+
+        <!-- Left: Board area -->
+        <Border Grid.Column="0" Margin="20" CornerRadius="12" Background="#16213e">
+            <Grid>
+                <!-- Board background decoration -->
+                <Border CornerRadius="10" Margin="10" Background="#2a2a4a">
+                    <Border.BoxShadow>
+                        <BoxShadows>0 5 20 0 #4D000000</BoxShadows>
+                    </Border.BoxShadow>
+                </Border>
+
+                <!-- Board Canvas -->
+                <Viewbox Margin="20" Stretch="Uniform">
+                    <Canvas x:Name="BoardCanvas"
+                            Width="600"
+                            Height="600"
+                            Background="Transparent"
+                            PointerPressed="BoardCanvas_PointerPressed"
+                            PointerMoved="BoardCanvas_PointerMoved"
+                            PointerExited="BoardCanvas_PointerExited"
+                            ClipToBounds="True">
+                    </Canvas>
+                </Viewbox>
+            </Grid>
+        </Border>
+
+        <!-- Right: Control panel -->
+        <Border Grid.Column="1" Margin="0,20,20,20" CornerRadius="12" Background="#16213e">
+            <Border.BoxShadow>
+                <BoxShadows>0 3 15 0 #33000000</BoxShadows>
+            </Border.BoxShadow>
+
+            <Grid Margin="15" RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+                <!-- Title -->
+                <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,10,0,20">
+                    <TextBlock Text="Gomoku"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="#e94560"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="vs AI"
+                               FontSize="16"
+                               Foreground="#eaeaea"
+                               HorizontalAlignment="Center"
+                               Opacity="0.8"/>
+                </StackPanel>
+
+                <!-- Status display -->
+                <Border Grid.Row="1"
+                        Background="#0f3460"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="Game Status"
+                                   FontSize="12"
+                                   Foreground="#888"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock x:Name="StatusText"
+                                   Text="Click [New Game]"
+                                   FontSize="14"
+                                   Foreground="#eaeaea"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Player info -->
+                <Border Grid.Row="2"
+                        Background="#0f3460"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,0,0,15">
+                    <StackPanel>
+                        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
+                            <Ellipse Width="20" Height="20" Fill="#111" Stroke="#444" StrokeThickness="1"/>
+                            <TextBlock Grid.Column="1" Text="You (Black)" Foreground="#eaeaea" Margin="10,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="PlayerIndicator" Grid.Column="2" Text="●" Foreground="#4ade80" FontSize="16" VerticalAlignment="Center"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Ellipse Width="20" Height="20" Fill="#fff" Stroke="#ccc" StrokeThickness="1"/>
+                            <TextBlock Grid.Column="1" Text="AI (White)" Foreground="#eaeaea" Margin="10,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="AIIndicator" Grid.Column="2" Text="○" Foreground="#666" FontSize="16" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Move history -->
+                <Border Grid.Row="3"
+                        Background="#0f3460"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,0,0,15">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Text="Move History"
+                                   FontSize="12"
+                                   Foreground="#888"
+                                   Margin="0,0,0,8"/>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="MoveHistoryList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   Foreground="#eaeaea"
+                                                   FontSize="12"
+                                                   Margin="0,2"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- Control buttons -->
+                <StackPanel Grid.Row="4">
+                    <Button x:Name="StartButton"
+                            Content="New Game"
+                            Classes="primary"
+                            HorizontalAlignment="Stretch"
+                            Click="StartButton_Click"
+                            Margin="0,0,0,10"/>
+                    <Button x:Name="UndoButton"
+                            Content="Undo"
+                            Classes="secondary"
+                            HorizontalAlignment="Stretch"
+                            Click="UndoButton_Click"
+                            IsEnabled="False"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
